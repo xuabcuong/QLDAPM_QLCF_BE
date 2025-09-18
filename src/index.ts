@@ -1,12 +1,16 @@
-import pool from "./config/db";
+import express from "express";
+import dotenv from "dotenv";
+import roleRoutes from "./routes/roleRoutes";
 
-async function main() {
-  try {
-    const [rows] = await pool.query("SELECT NOW() as now");
-    console.log("Kết nối DB thành công:", rows);
-  } catch (err) {
-    console.error("Lỗi kết nối DB:", err);
-  }
-}
+dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-main();
+app.use(express.json());
+
+// Routes
+app.use("/api", roleRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
