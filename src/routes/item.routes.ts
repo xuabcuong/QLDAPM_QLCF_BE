@@ -1,0 +1,20 @@
+// src/routes/item.route.ts
+import { Router } from "express";
+import {
+  getItems,
+  getItemById,
+  createItem,
+  updateItem,
+  deleteItem,
+} from "../controller/item.controller";
+import upload from "../middleware/upload";
+
+const router = Router();
+
+router.get("/", getItems);
+router.get("/:id", getItemById);
+router.post("/create", upload.single("image"), createItem);
+router.put("/:id", updateItem);
+router.delete("/:id", deleteItem);
+
+export default router;
