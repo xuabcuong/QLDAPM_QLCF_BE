@@ -6,6 +6,8 @@ import categoriRoutes from "./routes/category.routes";
 import itemRoutes from "./routes/item.routes";
 import tableRoutes from "./routes/table.route";
 import orderRoutes from "./routes/order.route";
+import paymentRoutes from "./routes/payment.routes";
+
 import cors from "cors";
 
 dotenv.config();
@@ -25,6 +27,7 @@ app.use("/api/categories", categoriRoutes);
 app.use("/api/item", itemRoutes);
 app.use("/api/table", tableRoutes);
 app.use("/api/order", orderRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT} ✅ `);
