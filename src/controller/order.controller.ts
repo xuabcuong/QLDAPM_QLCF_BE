@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AuthRequest } from "../middleware/authMiddleware";
 import OrderModel from "../models/order.model";
 import OrderItemModel, { OrderItem } from "../models/orderItem.model";
+import TabelModel from "../models/table.model";
 
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
@@ -18,9 +19,11 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         .json({ message: "Danh sách món không được để trống" });
     }
 
+    // ✅ 1. Tạo order mới
     const orderID = await OrderModel.create({ tableID, createdBy });
 
-    const orderItems: OrderItem[] = items.map((i: any) => ({
+    // ✅ 2. Thêm danh sách món
+    const orderItems = items.map((i: any) => ({
       orderID,
       itemID: i.itemID,
       quantity: i.quantity,
@@ -29,11 +32,21 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
 
     await OrderItemModel.createMany(orderItems);
 
+    // ✅ 3. Cập nhật trạng thái bàn => "2" (đang có khách)
+    const updateSuccess = await TabelModel.updateStatus(tableID, "1");
+
+    if (!updateSuccess) {
+      console.warn(`⚠️ Không thể cập nhật trạng thái bàn ID ${tableID}`);
+    }
+
+    // ✅ 4. Trả kết quả về client
     res.status(201).json({
       message: "Tạo order thành công",
       orderID,
       createdBy,
+      tableID,
       items: orderItems,
+      tableStatus: updateSuccess ? "2" : "Giữ nguyên",
     });
   } catch (error) {
     console.error("❌ Lỗi khi tạo order:", error);
@@ -106,6 +119,32 @@ export const updateOrder = async (req: Request, res: Response) => {
     res.json({ message: "Cập nhật order thành công" });
   } catch (error) {
     console.error("❌ Lỗi updateOrder:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+export const getOrderByTableAndStatus = async (req: Request, res: Response) => {
+  try {
+    const tableID = Number(req.params.tableID);
+    if (isNaN(tableID)) {
+      return res.status(400).json({ message: "tableID không hợp lệ" });
+    }
+
+    // ✅ 1. Lấy order có status = 0 theo tableID
+    const order = await OrderModel.getOrderByTableAndStatus(tableID, "0");
+    if (!order) {
+      return res.status(404).json({ message: "Không có order nào đang hoạt động cho bàn này" });
+    }
+
+    // ✅ 2. Lấy danh sách món theo orderID
+    const items = await OrderItemModel.getByOrderId(order.id!);
+
+    // ✅ 3. Trả kết quả
+    res.json({
+      order,
+      items,
+    });
+  } catch (error) {
+    console.error("❌ Lỗi getOrderByTableAndStatus:", error);
     res.status(500).json({ message: "Lỗi server" });
   }
 };

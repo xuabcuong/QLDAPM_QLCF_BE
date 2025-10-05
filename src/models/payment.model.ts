@@ -7,7 +7,6 @@ export interface Payment {
   orderid?: number;
 }
 const PaymentModle = {
-  
   getByDateRange: async (
     fromDate: string,
     toDate: string
@@ -26,5 +25,13 @@ const PaymentModle = {
     const result = rows as Payment[];
     return result.length ? result[0] : null;
   },
+  create: async (payment: Payment): Promise<number> => {
+    const [result]: any = await pool.query(
+      "INSERT INTO payments (totalAmount, orderid) VALUES (?, ?)",
+      [payment.totalAmount, payment.orderid]
+    );
+    return result.insertId;
+  },
 };
+
 export default PaymentModle;

@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 const SECRET_KEY = process.env.JWT_SECRET || "supersecretkey123";
 
 export interface AuthRequest extends Request {
-  user?: { id: number; username: string };
+  user?: { id: number; roleID: number }; // ⚡ Cập nhật lại theo payload thật
 }
 
 export const verifyToken = (
@@ -13,17 +13,37 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization?.split(" ")[1]; // "Bearer <token>"
+  const authHeader = req.headers.authorization;
+  console.log("🚀 ~ verifyToken ~ authHeader:", authHeader);
 
-  if (!token) {
+  if (!authHeader) {
     return res.status(401).json({ message: "Không có token xác thực" });
   }
 
+  const token = authHeader.split(" ")[1]; // "Bearer <token>"
+
+  if (!token) {
+    return res.status(401).json({ message: "Token không hợp lệ" });
+  }
+
   try {
-    const decoded = jwt.verify(token, SECRET_KEY) as { id: number; username: string };
+    // Giải mã token
+    const decoded = jwt.verify(token, SECRET_KEY) as {
+      id: number;
+      roleID: number;
+    };
+
+    // Lưu thông tin user vào request
     req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: "Token không hợp lệ hoặc hết hạn" });
+    console.log("🚀 ~ verifyToken ~ decoded:", decoded);
+
+    next(); // Cho phép đi tiếp đến controller
+  } catch (error: any) {
+    if (error.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .json({ message: "Token đã hết hạn, vui lòng đăng nhập lại" });
+    }
+    return res.status(403).json({ message: "Token không hợp lệ" });
   }
 };

@@ -9,7 +9,6 @@ import {
 } from "../controller/category.controller";
 
 const router = Router();
-
 router.get("/get_all", getCategories);
 router.get("/:id", getCategoryById);
 router.post("/categories", upload.single("image"), createCategory); // Thêm có upload ảnh

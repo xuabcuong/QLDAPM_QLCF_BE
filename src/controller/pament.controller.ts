@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import PaymentModel from "../models/payment.model";
+import TabelModel from "../models/table.model";
+import OrderModel from "../models/order.model";
 
 const PaymentController = {
   // Lấy danh sách theo khoảng ngày
@@ -43,6 +45,39 @@ const PaymentController = {
       res.json(payment);
     } catch (error: any) {
       console.error("Error in getById:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  createPayment: async (req: Request, res: Response) => {
+    try {
+      const { totalAmount, orderid, tableID } = req.body;
+
+      if (!totalAmount || !orderid || !tableID) {
+        return res
+          .status(400)
+          .json({ message: "Thiếu totalAmount, orderid hoặc tableID" });
+      }
+
+      // ✅ Tạo payment mới
+      const newPaymentId = await PaymentModel.create({ totalAmount, orderid });
+
+      // ✅ Cập nhật trạng thái: table -> '0' (trống), order -> '1' (đã thanh toán)
+      const updateTable = await TabelModel.updateStatus(tableID, "0");
+      const updateOrder = await OrderModel.updateStatus(orderid, "1");
+
+      if (!updateTable || !updateOrder) {
+        return res
+          .status(500)
+          .json({ message: "Không thể cập nhật trạng thái bàn hoặc đơn hàng" });
+      }
+
+      res.status(201).json({
+        message: "✅ Tạo thanh toán thành công",
+        paymentId: newPaymentId,
+      });
+    } catch (error: any) {
+      console.error("❌ Lỗi khi tạo payment:", error);
       res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
