@@ -1,10 +1,16 @@
 import { Request, Response } from "express";
+import { AuthRequest } from "../middleware/authMiddleware";
 import OrderModel from "../models/order.model";
 import OrderItemModel, { OrderItem } from "../models/orderItem.model";
-import pool from "../config/db";
-export const createOrder = async (req: Request, res: Response) => {
+
+export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
-    const { tableID, createdBy, items } = req.body;
+    const { tableID, items } = req.body;
+    const createdBy = req.user?.id; // ✅ Lấy userID từ token
+
+    if (!createdBy) {
+      return res.status(401).json({ message: "Không xác định được người tạo" });
+    }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res
@@ -14,7 +20,6 @@ export const createOrder = async (req: Request, res: Response) => {
 
     const orderID = await OrderModel.create({ tableID, createdBy });
 
-    // 2. Thêm danh sách món
     const orderItems: OrderItem[] = items.map((i: any) => ({
       orderID,
       itemID: i.itemID,
@@ -27,6 +32,7 @@ export const createOrder = async (req: Request, res: Response) => {
     res.status(201).json({
       message: "Tạo order thành công",
       orderID,
+      createdBy,
       items: orderItems,
     });
   } catch (error) {

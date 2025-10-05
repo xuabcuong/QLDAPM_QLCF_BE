@@ -5,12 +5,13 @@ import {
   getAllOrders,
   updateOrder,
 } from "../controller/order.controller";
+import { verifyToken } from "../middleware/authMiddleware";
 
 const router = Router();
 
-router.post("/create", createOrder);
+router.post("/create", verifyToken, createOrder);
 router.get("/:id", getOrderById);
 router.get("/", getAllOrders);
-router.put("/:id", updateOrder);
+router.put("/:id", verifyToken, updateOrder);
 
 export default router;
