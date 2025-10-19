@@ -18,9 +18,13 @@ const OrderModel = {
   },
 
   getById: async (id: number): Promise<Order | null> => {
-    const [rows]: any = await pool.query("SELECT * FROM orders WHERE id = ?", [
-      id,
-    ]);
+    const [rows]: any = await pool.query(
+      `SELECT o.*, a.full_name AS createdByName
+     FROM orders o
+     LEFT JOIN accounts a ON o.createdBy = a.id
+     WHERE o.id = ?`,
+      [id]
+    );
     return rows.length ? (rows[0] as Order) : null;
   },
 
@@ -46,12 +50,12 @@ const OrderModel = {
     return result.affectedRows > 0;
   },
   getOrderByTableAndStatus: async (tableID: number) => {
-  const [rows]: any = await pool.query(
-    "SELECT * FROM orders WHERE tableID = ? AND status IN (0, 2) ORDER BY createdAt DESC LIMIT 1",
-    [tableID]
-  );
-  return rows.length ? (rows[0] as Order) : null;
-},
+    const [rows]: any = await pool.query(
+      "SELECT * FROM orders WHERE tableID = ? AND status IN (0, 2) ORDER BY createdAt DESC LIMIT 1",
+      [tableID]
+    );
+    return rows.length ? (rows[0] as Order) : null;
+  },
 };
 
 export default OrderModel;

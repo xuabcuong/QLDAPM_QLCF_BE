@@ -21,7 +21,20 @@ const PaymentController = {
         toDate as string
       );
 
-      res.json(payments);
+      // Lấy thông tin order kèm full_name của người tạo
+      const data = await Promise.all(
+        payments.map(async (item) => {
+          const order = await OrderModel.getById(item.orderid!);
+          return {
+            ...item,
+            order, // hoặc order?.createdByName nếu chỉ cần tên
+          };
+        })
+      );
+
+      console.log("🚀 ~ data:", data);
+
+      res.json(data);
     } catch (error: any) {
       console.error("Error in getByDateRange:", error);
       res.status(500).json({ message: "Lỗi server", error: error.message });
