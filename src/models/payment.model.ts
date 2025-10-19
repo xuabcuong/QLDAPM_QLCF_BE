@@ -27,7 +27,7 @@ const PaymentModle = {
   },
   create: async (payment: Payment): Promise<number> => {
     const [result]: any = await pool.query(
-      "INSERT INTO payments (totalAmount, orderid) VALUES (?, ?)",
+      "INSERT INTO payments (totalAmount, orderid ,created_at) VALUES (?, ?, now())",
       [payment.totalAmount, payment.orderid]
     );
     return result.insertId;

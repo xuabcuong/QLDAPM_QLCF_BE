@@ -16,7 +16,6 @@ const app = express();
 app.use(cors());
 
 const PORT = process.env.PORT;
-console.log("🚀 ~ process.env.PORT:", process.env.PORT);
 
 app.use(express.json());
 

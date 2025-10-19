@@ -25,7 +25,7 @@ const TabelModel = {
       [item.tableNumber]
     );
     return result.insertId;
-    },
+  },
   updateStatus: async (id: number, status: string): Promise<boolean> => {
     const [result]: any = await pool.query(
       "UPDATE tables SET status = ? WHERE id = ?",

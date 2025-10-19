@@ -3,6 +3,7 @@ import { AuthRequest } from "../middleware/authMiddleware";
 import OrderModel from "../models/order.model";
 import OrderItemModel, { OrderItem } from "../models/orderItem.model";
 import TabelModel from "../models/table.model";
+import AccountModel from "../models/account.model";
 
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
@@ -78,7 +79,10 @@ export const getAllOrders = async (_req: Request, res: Response) => {
     const result = await Promise.all(
       orders.map(async (order) => {
         const items = await OrderItemModel.getByOrderId(order.id!);
-        return { ...order, items };
+        const table = await TabelModel.getById(order.tableID);
+        const staff = await AccountModel.getnameStaff(order.createdBy);
+        console.log("🚀 ~ getAllOrders ~ staff:", staff);
+        return { ...order, items, table, staff };
       })
     );
 
@@ -130,9 +134,11 @@ export const getOrderByTableAndStatus = async (req: Request, res: Response) => {
     }
 
     // ✅ 1. Lấy order có status = 0 theo tableID
-    const order = await OrderModel.getOrderByTableAndStatus(tableID, "0");
+    const order = await OrderModel.getOrderByTableAndStatus(tableID);
     if (!order) {
-      return res.status(404).json({ message: "Không có order nào đang hoạt động cho bàn này" });
+      return res
+        .status(404)
+        .json({ message: "Không có order nào đang hoạt động cho bàn này" });
     }
 
     // ✅ 2. Lấy danh sách món theo orderID
@@ -145,6 +151,18 @@ export const getOrderByTableAndStatus = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("❌ Lỗi getOrderByTableAndStatus:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+export const updatestatusOdrder = async (req: Request, res: Response) => {
+  try {
+    const orderID = Number(req.params.orderID);
+    const status = req.params.status;
+    await OrderModel.updateStatus(orderID, status);
+
+    res.status(200).json({ message: "cập nhật trạng thái thành công" });
+  } catch (error) {
+    console.error("❌ Lỗi :", error);
     res.status(500).json({ message: "Lỗi server" });
   }
 };
