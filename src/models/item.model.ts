@@ -30,7 +30,7 @@ const ItemModel = {
     return result.insertId;
   },
 
-  update: async (id: number, item: Item): Promise<boolean> => {
+  update: async (id: number, item: Partial<Item>): Promise<boolean> => {
     const [result]: any = await pool.query(
       "UPDATE item SET name=?, categoryID=?, isvailable=?, price=?, imageURL=? WHERE id=?",
       [
