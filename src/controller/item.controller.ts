@@ -1,4 +1,3 @@
-// src/controllers/item.controller.ts
 import { Request, Response } from "express";
 import ItemModel, { Item } from "../models/item.model";
 
@@ -7,6 +6,7 @@ export const getItems = async (req: Request, res: Response) => {
   try {
     const items = await ItemModel.getAll();
     res.json(items);
+    console.log("List product:", items);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi khi lấy danh sách item" });
@@ -17,6 +17,9 @@ export const getItems = async (req: Request, res: Response) => {
 export const getItemById = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
     const item = await ItemModel.getById(id);
     if (!item) {
       return res.status(404).json({ message: "Không tìm thấy item" });
@@ -29,7 +32,6 @@ export const getItemById = async (req: Request, res: Response) => {
 };
 
 // Tạo item mới
-// src/controllers/item.controller.ts
 
 export const createItem = async (req: Request, res: Response) => {
   try {
@@ -59,17 +61,55 @@ export const createItem = async (req: Request, res: Response) => {
 };
 
 // Cập nhật item
+// export const updateItem = async (req: Request, res: Response) => {
+//   try {
+//     const id = Number(req.params.id);
+//     // const item: Item = req.body;
+
+    
+//     console.log("Update item request body:", req.body);
+//      const itemData: Partial<Item> = req.body;
+   
+//       const updateData: Partial<Item> = Object.fromEntries(
+//       Object.entries(itemData).filter(([_, v]) => v !== null && v !== undefined)
+//     );
+
+
+//      const success = await ItemModel.update(id,updateData);
+//      console.log("Update data:", updateData);
+//     if (!success) {
+//       return res.status(404).json({ message: "Không tìm thấy item" });
+//     }
+
+//     res.json({ message: "Cập nhật thành công", item: { id, ...updateData} });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Lỗi khi cập nhật item" });
+//   }
+// };
 export const updateItem = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const item: Item = req.body;
-    const success = await ItemModel.update(id, item);
+    const body = req.body;
+    const updateData: any = {};
 
-    if (!success) {
-      return res.status(404).json({ message: "Không tìm thấy item" });
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.price !== undefined) updateData.price = body.price;
+    if (body.categoryID !== undefined && body.categoryID !== "")
+      updateData.categoryID = Number(body.categoryID);
+    if (body.isavailable !== undefined && body.isavailable !== "")
+      updateData.isavailable = Number(body.isavailable);
+
+    if (req.file) {
+      updateData.imageURL = req.file.filename; // hoặc req.file.path tùy bạn lưu
     }
 
-    res.json({ message: "Cập nhật thành công", item: { id, ...item } });
+    console.log("✅ Cleaned updateData:", updateData);
+
+    const success = await ItemModel.update(id, updateData);
+    if (!success) return res.status(404).json({ message: "Không tìm thấy item" });
+
+    res.json({ message: "Cập nhật thành công", item: { id, ...updateData } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi khi cập nhật item" });

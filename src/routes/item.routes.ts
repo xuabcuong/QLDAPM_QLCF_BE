@@ -1,4 +1,3 @@
-// src/routes/item.route.ts
 import { Router } from "express";
 import {
   getItems,
@@ -14,7 +13,9 @@ const router = Router();
 router.get("/getAll", getItems);
 router.get("/:id", getItemById);
 router.post("/create", upload.single("image"), createItem);
-router.put("/:id", updateItem);
-router.delete("/:id", deleteItem);
+
+router.put("/update/:id", upload.single("imageURL"), updateItem);
+
+router.delete("/delete/:id", deleteItem);
 
 export default router;
