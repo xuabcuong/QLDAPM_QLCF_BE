@@ -81,7 +81,6 @@ export const getAllOrders = async (_req: Request, res: Response) => {
         const items = await OrderItemModel.getByOrderId(order.id!);
         const table = await TabelModel.getById(order.tableID);
         const staff = await AccountModel.getnameStaff(order.createdBy);
-        console.log("🚀 ~ getAllOrders ~ staff:", staff);
         return { ...order, items, table, staff };
       })
     );

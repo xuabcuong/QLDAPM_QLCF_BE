@@ -65,3 +65,66 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Lỗi server", error: err });
   }
 };
+export const getAllAccount = async (req: Request, res: Response) => {
+  try {
+    const accounts = await AccountModel.getAllAccount();
+
+    if (!accounts || accounts.length === 0) {
+      return res.status(404).json({ message: "Không có tài khoản nào." });
+    }
+
+    return res.status(200).json({
+      message: "Lấy danh sách tài khoản thành công.",
+      data: accounts,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách tài khoản:", error);
+    return res.status(500).json({ message: "Lỗi server." });
+  }
+};
+export const getOneAccount = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const accounts = await AccountModel.getOneAccount(id);
+
+    if (!accounts || accounts.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy tài khoản ." });
+    }
+
+    return res.status(200).json({
+      message: "Lấy tài khoản thành công.",
+      data: accounts,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy tài khoản:", error);
+    return res.status(500).json({ message: "Lỗi server." });
+  }
+};
+
+export const updateAccount = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { name, full_name, phoneNumber, roleID, status } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Thiếu ID nhân viên." });
+    }
+
+    await AccountModel.updateAccount(id, {
+      name,
+      full_name,
+      phoneNumber,
+      roleID,
+      status,
+    });
+
+    const updated = await AccountModel.getOneAccount(id);
+    res.status(200).json({
+      message: "Cập nhật tài khoản thành công.",
+      data: updated[0],
+    });
+  } catch (error) {
+    console.error("❌ Lỗi updateAccount:", error);
+    res.status(500).json({ message: "Lỗi server khi cập nhật tài khoản." });
+  }
+};

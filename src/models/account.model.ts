@@ -12,6 +12,19 @@ export interface Account {
 }
 
 export default class AccountModel {
+  static async getAllAccount(): Promise<Account[]> {
+    const [rows] = await pool.query(
+      "SELECT id, name, full_name, phoneNumber, roleID, status  FROM accounts"
+    );
+    return rows as Account[];
+  }
+  static async getOneAccount(id: number): Promise<Account[]> {
+    const [rows] = await pool.query(
+      "SELECT id, name, full_name, phoneNumber, roleID, status  FROM accounts WHERE id =?",
+      [id]
+    );
+    return rows as Account[];
+  }
   // Tìm user theo username
   static async findByName(name: string) {
     const [rows] = await pool.query("SELECT * FROM accounts WHERE name = ?", [
@@ -40,5 +53,37 @@ export default class AccountModel {
     );
     const result = rows as { full_name: string }[];
     return result.length > 0 ? result[0].full_name : null;
+  }
+  static async updateAccount(id: number, account: Partial<Account>) {
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (account.full_name !== undefined) {
+      fields.push("full_name = ?");
+      values.push(account.full_name);
+    }
+    if (account.phoneNumber !== undefined) {
+      fields.push("phoneNumber = ?");
+      values.push(account.phoneNumber);
+    }
+    if (account.roleID !== undefined) {
+      fields.push("roleID = ?");
+      values.push(account.roleID);
+    }
+    if (account.status !== undefined) {
+      fields.push("status = ?");
+      values.push(account.status);
+    }
+
+    // Nếu không có trường nào để cập nhật, dừng lại
+    if (fields.length === 0) {
+      throw new Error("Không có dữ liệu nào để cập nhật!");
+    }
+
+    const sql = `UPDATE accounts SET ${fields.join(", ")} WHERE id = ?`;
+    values.push(id);
+
+    const [result] = await pool.query(sql, values);
+    return result;
   }
 }
