@@ -4,11 +4,11 @@ import OrderModel from "../models/order.model";
 import OrderItemModel, { OrderItem } from "../models/orderItem.model";
 import TabelModel from "../models/table.model";
 import AccountModel from "../models/account.model";
-
+import { io } from "..";
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
     const { tableID, items } = req.body;
-    const createdBy = req.user?.id; // ✅ Lấy userID từ token
+    const createdBy = req.user?.id;
 
     if (!createdBy) {
       return res.status(401).json({ message: "Không xác định được người tạo" });
@@ -20,34 +20,37 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         .json({ message: "Danh sách món không được để trống" });
     }
 
-    // ✅ 1. Tạo order mới
+    // 1️⃣ Tạo order mới
     const orderID = await OrderModel.create({ tableID, createdBy });
 
-    // ✅ 2. Thêm danh sách món
+    // 2️⃣ Thêm danh sách món
     const orderItems = items.map((i: any) => ({
       orderID,
       itemID: i.itemID,
       quantity: i.quantity,
       note: i.note || null,
     }));
-
     await OrderItemModel.createMany(orderItems);
 
-    // ✅ 3. Cập nhật trạng thái bàn => "2" (đang có khách)
-    const updateSuccess = await TabelModel.updateStatus(tableID, "1");
+    // 3️⃣ Cập nhật trạng thái bàn
+    const updateSuccess = await TabelModel.updateStatus(tableID, "2"); // 2 = đang có khách
 
-    if (!updateSuccess) {
-      console.warn(`⚠️ Không thể cập nhật trạng thái bàn ID ${tableID}`);
-    }
-
-    // ✅ 4. Trả kết quả về client
-    res.status(201).json({
-      message: "Tạo order thành công",
+    // 4️⃣ Chuẩn bị kết quả trả về
+    const orderData = {
       orderID,
       createdBy,
       tableID,
       items: orderItems,
       tableStatus: updateSuccess ? "2" : "Giữ nguyên",
+    };
+
+    // 5️⃣ 🔔 Phát sự kiện Socket.IO cho tất cả client
+    io.emit("newOrder", orderData);
+
+    // 6️⃣ Trả kết quả về client
+    res.status(201).json({
+      message: "Tạo order thành công",
+      ...orderData,
     });
   } catch (error) {
     console.error("❌ Lỗi khi tạo order:", error);
@@ -157,9 +160,16 @@ export const updatestatusOdrder = async (req: Request, res: Response) => {
   try {
     const orderID = Number(req.params.orderID);
     const status = req.params.status;
+
+    // Cập nhật trạng thái order
     await OrderModel.updateStatus(orderID, status);
 
-    res.status(200).json({ message: "cập nhật trạng thái thành công" });
+    // Nếu status = 2 (hoàn thành), phát socket
+    if (status === "2") {
+      io.emit("orderDone", { orderID, status });
+    }
+
+    res.status(200).json({ message: "Cập nhật trạng thái thành công" });
   } catch (error) {
     console.error("❌ Lỗi :", error);
     res.status(500).json({ message: "Lỗi server" });

@@ -6,7 +6,6 @@ export interface OrderItem {
   itemID: number;
   quantity: number;
   note?: string;
-  // Thêm thông tin từ bảng item
   itemName?: string;
   price?: number;
   imageURI?: string;
