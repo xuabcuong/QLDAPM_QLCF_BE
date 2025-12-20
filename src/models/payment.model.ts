@@ -32,6 +32,23 @@ const PaymentModle = {
     );
     return result.insertId;
   },
+
+  getMonthlyStatisticsByYear: async (year: number) => {
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        MONTH(created_at) AS month,
+        SUM(totalAmount) AS totalAmount
+      FROM payments
+      WHERE YEAR(created_at) = ?
+      GROUP BY MONTH(created_at)
+      ORDER BY month
+      `,
+      [year]
+    );
+
+    return rows as { month: number; totalAmount: number }[];
+  },
 };
 
 export default PaymentModle;

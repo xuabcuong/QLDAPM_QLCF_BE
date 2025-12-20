@@ -23,9 +23,10 @@ const ItemModel = {
   },
 
   create: async (item: Item): Promise<number> => {
+    console.log("🚀 ~ item:", item);
     const [result]: any = await pool.query(
       "INSERT INTO item (name, categoryID, isvailable, price, imageURL) VALUES (?, ?, ?, ?, ?)",
-      [item.name, item.categoryID, item.isvailable, item.price, item.imageURL]
+      [item.name, item.categoryID, 1, item.price, item.imageURL]
     );
     return result.insertId;
   },

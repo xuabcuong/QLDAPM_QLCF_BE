@@ -6,7 +6,6 @@ export const getItems = async (req: Request, res: Response) => {
   try {
     const items = await ItemModel.getAll();
     res.json(items);
-    console.log("List product:", items);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi khi lấy danh sách item" });
@@ -43,7 +42,7 @@ export const createItem = async (req: Request, res: Response) => {
     const newItem: Item = {
       name,
       categoryID: Number(categoryID),
-      isvailable: Number(isvailable),
+      isvailable: 1,
       price: Number(price),
       imageURL,
     };
@@ -66,14 +65,12 @@ export const createItem = async (req: Request, res: Response) => {
 //     const id = Number(req.params.id);
 //     // const item: Item = req.body;
 
-    
 //     console.log("Update item request body:", req.body);
 //      const itemData: Partial<Item> = req.body;
-   
+
 //       const updateData: Partial<Item> = Object.fromEntries(
 //       Object.entries(itemData).filter(([_, v]) => v !== null && v !== undefined)
 //     );
-
 
 //      const success = await ItemModel.update(id,updateData);
 //      console.log("Update data:", updateData);
@@ -101,13 +98,14 @@ export const updateItem = async (req: Request, res: Response) => {
       updateData.isavailable = Number(body.isavailable);
 
     if (req.file) {
-      updateData.imageURL = req.file.filename; // hoặc req.file.path tùy bạn lưu
+      updateData.imageURL = req.file ? (req.file as any).path : null;
     }
 
     console.log("✅ Cleaned updateData:", updateData);
 
     const success = await ItemModel.update(id, updateData);
-    if (!success) return res.status(404).json({ message: "Không tìm thấy item" });
+    if (!success)
+      return res.status(404).json({ message: "Không tìm thấy item" });
 
     res.json({ message: "Cập nhật thành công", item: { id, ...updateData } });
   } catch (error) {

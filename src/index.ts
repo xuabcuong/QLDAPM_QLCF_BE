@@ -11,6 +11,8 @@ import itemRoutes from "./routes/item.routes";
 import tableRoutes from "./routes/table.route";
 import orderRoutes from "./routes/order.route";
 import paymentRoutes from "./routes/payment.routes";
+import statisticalRoutes from "./routes/statistical.routes";
+
 import { initSocket } from "./socket/socketHandler"; // 👈 Tạo file này ở bước dưới.
 
 dotenv.config();
@@ -36,6 +38,7 @@ app.use("/api/item", itemRoutes);
 app.use("/api/table", tableRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/statistical", statisticalRoutes);
 
 // Khởi tạo socket
 initSocket(io); // 👈 Gọi hàm xử lý sự kiện
