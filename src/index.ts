@@ -27,10 +27,7 @@ export const io = new Server(server, {
       "http://localhost:3000",
       "https://frontend-qldapm-fo6c.vercel.app",
     ],
-    methods: ["GET", "POST"],
-    credentials: true,
   },
-  transports: ["websocket"], // 🔥 QUAN TRỌNG
 });
 
 app.use(cors());
@@ -51,5 +48,5 @@ initSocket(io); // 👈 Gọi hàm xử lý sự kiện
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT} ola`);
 });
