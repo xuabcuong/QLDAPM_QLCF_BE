@@ -23,8 +23,14 @@ const server = http.createServer(app);
 // Cấu hình Socket.IO
 export const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: [
+      "http://localhost:3000",
+      "https://frontend-qldapm-fo6c.vercel.app/login",
+    ],
+    methods: ["GET", "POST"],
+    credentials: true,
   },
+  transports: ["websocket"], // 🔥 QUAN TRỌNG
 });
 
 app.use(cors());
