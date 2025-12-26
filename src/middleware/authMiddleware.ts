@@ -14,7 +14,6 @@ export const verifyToken = (
   next: NextFunction
 ) => {
   const authHeader = req.headers.authorization;
-  console.log("🚀 ~ verifyToken ~ authHeader:", authHeader);
 
   if (!authHeader) {
     return res.status(401).json({ message: "Không có token xác thực" });
@@ -35,7 +34,6 @@ export const verifyToken = (
 
     // Lưu thông tin user vào request
     req.user = decoded;
-    console.log("🚀 ~ verifyToken ~ decoded:", decoded);
 
     next(); // Cho phép đi tiếp đến controller
   } catch (error: any) {

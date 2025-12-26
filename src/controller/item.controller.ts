@@ -88,6 +88,7 @@ export const updateItem = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const body = req.body;
+    console.log("🚀 ~ updateItem ~ body:", body);
     const updateData: any = {};
 
     if (body.name !== undefined) updateData.name = body.name;
@@ -97,11 +98,14 @@ export const updateItem = async (req: Request, res: Response) => {
     if (body.isavailable !== undefined && body.isavailable !== "")
       updateData.isavailable = Number(body.isavailable);
 
-    if (req.file) {
-      updateData.imageURL = req.file ? (req.file as any).path : null;
+    if (req.file || body.imageURL) {
+      updateData.imageURL = req.file ? (req.file as any).path : body.imageURL;
+      console.log("🚀 ~ updateItem ~  body.imageURL:", body.imageURL);
+      console.log(
+        "🚀 ~ updateItem ~  updateData.imageURL:",
+        updateData.imageURL
+      );
     }
-
-    console.log("✅ Cleaned updateData:", updateData);
 
     const success = await ItemModel.update(id, updateData);
     if (!success)

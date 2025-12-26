@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import AccountModel from "../models/account.model";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -126,5 +127,27 @@ export const updateAccount = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("❌ Lỗi updateAccount:", error);
     res.status(500).json({ message: "Lỗi server khi cập nhật tài khoản." });
+  }
+};
+export const getProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Chưa đăng nhập" });
+    }
+
+    const id = Number(req.user.id); // ✅ LẤY ID TỪ TOKEN
+    const accounts = await AccountModel.getOneAccount(id);
+
+    if (!accounts || accounts.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy tài khoản." });
+    }
+
+    return res.status(200).json({
+      message: "Lấy tài khoản thành công.",
+      data: accounts,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy tài khoản:", error);
+    return res.status(500).json({ message: "Lỗi server." });
   }
 };

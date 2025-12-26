@@ -70,12 +70,12 @@ export default class AccountModel {
       values.push(account.full_name);
     }
 
-    if (!account.phoneNumber) {
+    if (account.phoneNumber !== undefined) {
       fields.push("phoneNumber = ?");
       values.push(account.phoneNumber);
     }
 
-    if (!account.roleID) {
+    if (account.roleID !== undefined) {
       fields.push("roleID = ?");
       values.push(account.roleID);
     }
