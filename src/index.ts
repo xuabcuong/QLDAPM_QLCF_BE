@@ -27,8 +27,12 @@ export const io = new Server(server, {
       "http://localhost:3000",
       "https://frontend-qldapm-fo6c.vercel.app",
     ],
+    methods: ["GET", "POST"],
+    credentials: true,
   },
+  transports: ["websocket"], // 🔥 QUAN TRỌNG
 });
+
 
 app.use(cors());
 app.use(express.json());
